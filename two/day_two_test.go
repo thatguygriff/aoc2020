@@ -19,10 +19,22 @@ func Test_db_valiate(t *testing.T) {
 	database := db{}
 	database.load("sample.txt")
 
-	validCount := database.validate()
+	validCount := database.validate(validate)
 
 	if validCount != 2 {
 		t.Logf("Expected 2 valid passwords, Got %d valid passwords", validCount)
+		t.FailNow()
+	}
+}
+
+func Test_db_tobogganValidate(t *testing.T) {
+	database := db{}
+	database.load("sample.txt")
+
+	validCount := database.validate(tobogganValidate)
+
+	if validCount != 1 {
+		t.Logf("Expected 1 valid password, Got %d valid passwords", validCount)
 		t.FailNow()
 	}
 }

@@ -65,10 +65,20 @@ func validate(password string, policy passwordPolicy) bool {
 	return (instances >= policy.min && instances <= policy.max)
 }
 
-func (d *db) validate() int {
+func tobogganValidate(password string, policy passwordPolicy) bool {
+	var first, second string
+	first = string(password[policy.min-1])
+	if len(password) >= policy.max {
+		second = string(password[policy.max-1])
+	}
+
+	return ((first == policy.mustHave && second != policy.mustHave) || (first != policy.mustHave && second == policy.mustHave))
+}
+
+func (d *db) validate(validator func(string, passwordPolicy) bool) int {
 	valid := 0
 	for _, entry := range d.passwords {
-		if validate(entry.password, entry.policy) {
+		if validator(entry.password, entry.policy) {
 			valid++
 		}
 	}
@@ -80,11 +90,14 @@ func (d *db) validate() int {
 func PartOne() string {
 	database := db{}
 	database.load("two/passwords.txt")
-	valid := database.validate()
+	valid := database.validate(validate)
 	return fmt.Sprintf("Found %d valid passwords", valid)
 }
 
-// PartTwo
+// PartTwo Find how many passwords are valid with the new interpretation of the policy
 func PartTwo() string {
-	return ""
+	database := db{}
+	database.load("two/passwords.txt")
+	valid := database.validate(tobogganValidate)
+	return fmt.Sprintf("Found %d valid passwords", valid)
 }
