@@ -15,7 +15,7 @@ func Test_expenseReport_load(t *testing.T) {
 	}
 }
 
-func Test_expenseReport_searchAndMultiply(t *testing.T) {
+func Test_expenseReport_findPairAndMultiply(t *testing.T) {
 	report := expenseReport{
 		expenses: []int{
 			1721,
@@ -27,9 +27,28 @@ func Test_expenseReport_searchAndMultiply(t *testing.T) {
 		},
 	}
 
-	result, _ := report.searchAndMultiply(2020)
+	result, _ := report.findPairAndMultiply(2020)
 	if result != 514579 {
 		t.Logf("Expected 514579, Got %d", result)
+		t.FailNow()
+	}
+}
+
+func Test_expenseReport_findTrioAndMultiply(t *testing.T) {
+	report := expenseReport{
+		expenses: []int{
+			1721,
+			979,
+			366,
+			299,
+			675,
+			1456,
+		},
+	}
+
+	result, _ := report.findTrioAndMultiply(2020)
+	if result != 241861950 {
+		t.Logf("Expected 241861950, Got %d", result)
 		t.FailNow()
 	}
 }

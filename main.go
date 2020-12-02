@@ -8,4 +8,5 @@ import (
 
 func main() {
 	fmt.Println(one.PartOne())
+	fmt.Println(one.PartTwo())
 }

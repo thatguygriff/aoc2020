@@ -30,7 +30,7 @@ func (e *expenseReport) load(filename string) error {
 	return nil
 }
 
-func (e *expenseReport) searchAndMultiply(target int) (int, error) {
+func (e *expenseReport) findPairAndMultiply(target int) (int, error) {
 	for i := 0; i < len(e.expenses); i++ {
 		if e.expenses[i] > target {
 			continue
@@ -50,6 +50,32 @@ func (e *expenseReport) searchAndMultiply(target int) (int, error) {
 	return -1, fmt.Errorf("Unable to find target pair that sums to %d", target)
 }
 
+func (e *expenseReport) findTrioAndMultiply(target int) (int, error) {
+	for i := 0; i < len(e.expenses); i++ {
+		if e.expenses[i] > target {
+			continue
+		}
+
+		for j := i + 1; j < len(e.expenses); j++ {
+			if e.expenses[j] > target {
+				continue
+			}
+
+			for k := j + 1; k < len(e.expenses); k++ {
+				if e.expenses[k] > target {
+					continue
+				}
+
+				if (e.expenses[i] + e.expenses[j] + e.expenses[k]) == target {
+					return e.expenses[i] * e.expenses[j] * e.expenses[k], nil
+				}
+			}
+		}
+	}
+
+	return -1, fmt.Errorf("Unable to find target pair that sums to %d", target)
+}
+
 // PartOne Find the multiplied value of the two expenses totalling 2020
 func PartOne() string {
 	report := expenseReport{}
@@ -58,10 +84,26 @@ func PartOne() string {
 		return fmt.Sprintf("Unable to load expenses: %s", err.Error())
 	}
 
-	result, err := report.searchAndMultiply(2020)
+	result, err := report.findPairAndMultiply(2020)
 	if err != nil {
 		return err.Error()
 	}
 
 	return fmt.Sprintf("The output of the expenses summing to 2020 is %d", result)
+}
+
+func PartTwo() string {
+	report := expenseReport{}
+	err := report.load("one/expenses.txt")
+	if err != nil {
+		return fmt.Sprintf("Unable to load expenses: %s", err.Error())
+	}
+
+	result, err := report.findTrioAndMultiply(2020)
+	if err != nil {
+		return err.Error()
+	}
+
+	return fmt.Sprintf("The output of the expenses summing to 2020 is %d", result)
+
 }
