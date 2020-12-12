@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/thatguygriff/aoc2020/eleven"
+	"github.com/thatguygriff/aoc2020/twelve"
 )
 
 func main() {
@@ -48,6 +48,10 @@ func main() {
 	// fmt.Println(ten.PartTwo())
 
 	// Day 11
-	fmt.Println(eleven.PartOne())
-	fmt.Println(eleven.PartTwo())
+	// fmt.Println(eleven.PartOne())
+	// fmt.Println(eleven.PartTwo())
+
+	// Day 12
+	fmt.Println(twelve.PartOne())
+	fmt.Println(twelve.PartTwo())
 }
