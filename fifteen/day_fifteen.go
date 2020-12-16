@@ -81,3 +81,13 @@ func PartOne() string {
 
 	return fmt.Sprintf("The 2020th number is %d", g.valueAt(2020))
 }
+
+// PartTwo What is the 30000000th number given my input
+func PartTwo() string {
+	g := game{}
+	if err := g.load("fifteen/input.txt"); err != nil {
+		return err.Error()
+	}
+
+	return fmt.Sprintf("The 30000000th number is %d", g.valueAt(30000000))
+}

@@ -43,3 +43,18 @@ func Test_get_guess2(t *testing.T) {
 	}
 }
 
+func Test_get_guess3(t *testing.T) {
+	g := game{}
+	if err := g.load("sample.txt"); err != nil {
+		t.Logf(err.Error())
+		t.FailNow()
+	}
+
+	r := g.valueAt(30000000)
+	if r != 175594 {
+		t.Logf("Expected 175594, but got %d", r)
+		t.FailNow()
+	}
+}
+
+
