@@ -2,7 +2,7 @@
 
 mkdir $1
 
-echo "package seventeen
+echo "package $1
 
 import (
 	\"bufio\"
