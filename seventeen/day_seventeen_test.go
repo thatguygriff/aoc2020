@@ -22,14 +22,13 @@ func Test_dimension_simulate1(t *testing.T) {
 		t.Logf(err.Error())
 		t.FailNow()
 	}
-	p.print()
 
 	p = simulate(p, 1)
 	p.print()
 
 	active := p.active()
-	if active != 12 {
-		t.Logf("Expected 11 active after 1 rounds, found %d", active)
+	if active != 29 {
+		t.Logf("Expected 29 active after 1 rounds, found %d", active)
 		t.FailNow()
 	}
 }
@@ -42,10 +41,10 @@ func Test_dimension_simulate(t *testing.T) {
 	}
 
 	p = simulate(p, 6)
-	p.print()
+
 	active := p.active()
-	if active != 112 {
-		t.Logf("Expected 112 active after 6 rounds, found %d", active)
+	if active != 848 {
+		t.Logf("Expected 848 active after 6 rounds, found %d", active)
 		t.FailNow()
 	}
 }

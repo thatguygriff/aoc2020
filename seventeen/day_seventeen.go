@@ -7,7 +7,7 @@ import (
 )
 
 type pocket struct {
-	dimension [][][]bool
+	dimension [][][][]bool
 }
 
 func (p *pocket) initialize(filename string) error {
@@ -20,16 +20,18 @@ func (p *pocket) initialize(filename string) error {
 	scanner := bufio.NewScanner(file)
 	y := 0
 	z := 0
-	p.dimension = [][][]bool{}
-	p.dimension = append(p.dimension, [][]bool{})
+	w := 0
+	p.dimension = [][][][]bool{}
+	p.dimension = append(p.dimension, [][][]bool{})
+	p.dimension[w] = append(p.dimension[w], [][]bool{})
 	for scanner.Scan() {
-		p.dimension[z] = append(p.dimension[z], []bool{})
+		p.dimension[w][z] = append(p.dimension[w][z], []bool{})
 		for _, c := range scanner.Text() {
 			switch string(c) {
 			case "#":
-				p.dimension[z][y] = append(p.dimension[z][y], true)
+				p.dimension[w][z][y] = append(p.dimension[w][z][y], true)
 			case ".":
-				p.dimension[z][y] = append(p.dimension[z][y], false)
+				p.dimension[w][z][y] = append(p.dimension[w][z][y], false)
 			}
 		}
 		y++
@@ -41,11 +43,13 @@ func (p *pocket) initialize(filename string) error {
 func (p *pocket) active() int {
 	count := 0
 
-	for z := 0; z < len(p.dimension); z++ {
-		for y := 0; y < len(p.dimension[z]); y++ {
-			for x := 0; x < len(p.dimension[z][y]); x++ {
-				if p.dimension[z][y][x] {
-					count++
+	for w := 0; w < len(p.dimension); w++ {
+		for z := 0; z < len(p.dimension[w]); z++ {
+			for y := 0; y < len(p.dimension[w][z]); y++ {
+				for x := 0; x < len(p.dimension[w][z][y]); x++ {
+					if p.dimension[w][z][y][x] {
+						count++
+					}
 				}
 			}
 		}
@@ -54,29 +58,34 @@ func (p *pocket) active() int {
 	return count
 }
 
-func activation(p pocket, x, y, z int) bool {
+func activation(p pocket, x, y, z, w int) bool {
 	activeNeighbours := 0
 	selfActive := false
-	for zIndex := z - 1; zIndex <= z+1; zIndex++ {
-		if zIndex < 0 || zIndex >= len(p.dimension) {
+	for wIndex := w - 1; wIndex <= w+1; wIndex++ {
+		if wIndex < 0 || wIndex >= len(p.dimension) {
 			continue
 		}
-		for yIndex := y - 1; yIndex <= y+1; yIndex++ {
-			if yIndex < 0 || yIndex >= len(p.dimension[zIndex]) {
+		for zIndex := z - 1; zIndex <= z+1; zIndex++ {
+			if zIndex < 0 || zIndex >= len(p.dimension[wIndex]) {
 				continue
 			}
-			for xIndex := x - 1; xIndex <= x+1; xIndex++ {
-				if xIndex < 0 || xIndex >= len(p.dimension[zIndex][yIndex]) {
+			for yIndex := y - 1; yIndex <= y+1; yIndex++ {
+				if yIndex < 0 || yIndex >= len(p.dimension[wIndex][zIndex]) {
 					continue
 				}
+				for xIndex := x - 1; xIndex <= x+1; xIndex++ {
+					if xIndex < 0 || xIndex >= len(p.dimension[wIndex][zIndex][yIndex]) {
+						continue
+					}
 
-				if xIndex == x && yIndex == y && zIndex == z {
-					selfActive = p.dimension[zIndex][yIndex][xIndex]
-					continue
-				}
+					if xIndex == x && yIndex == y && zIndex == z && wIndex == w {
+						selfActive = p.dimension[wIndex][zIndex][yIndex][xIndex]
+						continue
+					}
 
-				if p.dimension[zIndex][yIndex][xIndex] {
-					activeNeighbours++
+					if p.dimension[wIndex][zIndex][yIndex][xIndex] {
+						activeNeighbours++
+					}
 				}
 			}
 		}
@@ -96,18 +105,20 @@ func activation(p pocket, x, y, z int) bool {
 }
 
 func (p *pocket) print() {
-	for z := 0; z < len(p.dimension); z++ {
-		fmt.Printf("\nz=%d\n", z)
-		for y := 0; y < len(p.dimension[z]); y++ {
-			yString := ""
-			for x := 0; x < len(p.dimension[z][y]); x++ {
-				if p.dimension[z][y][x] {
-					yString += "#"
-				} else {
-					yString += "."
+	for w := 0; w < len(p.dimension); w++ {
+		for z := 0; z < len(p.dimension[w]); z++ {
+			fmt.Printf("\nz=%d, w=%d\n", z, w)
+			for y := 0; y < len(p.dimension[w][z]); y++ {
+				yString := ""
+				for x := 0; x < len(p.dimension[w][z][y]); x++ {
+					if p.dimension[w][z][y][x] {
+						yString += "#"
+					} else {
+						yString += "."
+					}
 				}
+				fmt.Println(yString)
 			}
-			fmt.Println(yString)
 		}
 	}
 }
@@ -117,15 +128,18 @@ func simulate(start pocket, count int) pocket {
 
 	for round := 0; round < count; round++ {
 		next := pocket{
-			dimension: make([][][]bool, len(simulated.dimension)+2),
+			dimension: make([][][][]bool, len(simulated.dimension)+2),
 		}
 
-		for z := -1; z < len(simulated.dimension)+1; z++ {
-			next.dimension[z+1] = make([][]bool, len(simulated.dimension[0])+2)
-			for y := -1; y < len(simulated.dimension[0])+1; y++ {
-				next.dimension[z+1][y+1] = make([]bool, len(simulated.dimension[0][0])+2)
-				for x := -1; x < len(simulated.dimension[0][0])+1; x++ {
-					next.dimension[z+1][y+1][x+1] = activation(simulated, x, y, z)
+		for w := -1; w < len(simulated.dimension)+1; w++ {
+			next.dimension[w+1] = make([][][]bool, len(simulated.dimension[0])+2)
+			for z := -1; z < len(simulated.dimension[0])+1; z++ {
+				next.dimension[w+1][z+1] = make([][]bool, len(simulated.dimension[0][0])+2)
+				for y := -1; y < len(simulated.dimension[0][0])+1; y++ {
+					next.dimension[w+1][z+1][y+1] = make([]bool, len(simulated.dimension[0][0][0])+2)
+					for x := -1; x < len(simulated.dimension[0][0][0])+1; x++ {
+						next.dimension[w+1][z+1][y+1][x+1] = activation(simulated, x, y, z, w)
+					}
 				}
 			}
 		}
@@ -136,8 +150,8 @@ func simulate(start pocket, count int) pocket {
 	return simulated
 }
 
-// PartOne How many active cubes are left after 6 cycles
-func PartOne() string {
+// PartTwo How many active cubes are left after 6 cycles
+func PartTwo() string {
 	p := pocket{}
 	if err := p.initialize("seventeen/input.txt"); err != nil {
 		return err.Error()
