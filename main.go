@@ -89,4 +89,5 @@ func main() {
 
 	// Day 21
 	fmt.Println(twentyone.PartOne())
+	fmt.Println(twentyone.PartTwo())
 }

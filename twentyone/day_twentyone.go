@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 )
 
@@ -13,9 +14,9 @@ type food struct {
 }
 
 type list struct {
-	foods                       []food
-	allergens                   map[string]bool
-	possibleIngredientAllergens map[string][]string
+	foods               []food
+	allergens           map[string]bool
+	ingredientAllergens map[string][]string
 }
 
 func (l *list) load(filename string) error {
@@ -26,7 +27,7 @@ func (l *list) load(filename string) error {
 	defer file.Close()
 
 	l.allergens = map[string]bool{}
-	l.possibleIngredientAllergens = map[string][]string{}
+	l.ingredientAllergens = map[string][]string{}
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
@@ -41,7 +42,7 @@ func (l *list) load(filename string) error {
 		ingredients := strings.Split(foodParts[0], " ")
 		for _, i := range ingredients {
 			f.ingredients[i] = true
-			l.possibleIngredientAllergens[i] = []string{}
+			l.ingredientAllergens[i] = []string{}
 		}
 
 		allergens := strings.Split(foodParts[1], ")")
@@ -85,9 +86,71 @@ func (l *list) isolateIngredientAllergens() {
 
 		for i, cause := range possibleIngredients {
 			if cause {
-				l.possibleIngredientAllergens[i] = append(l.possibleIngredientAllergens[i], allergen)
+				l.ingredientAllergens[i] = append(l.ingredientAllergens[i], allergen)
 			}
 		}
+	}
+
+	tmpIngredients := map[string][]string{}
+	// Remove duplicate allergens
+	for ingredient, allergens := range l.ingredientAllergens {
+		if len(allergens) < 1 {
+			continue
+		}
+
+		tmpIngredients[ingredient] = allergens
+	}
+
+	stable := false
+	for !stable {
+		causes := l.getIngredientsWithAllergens()
+		// Check to see if every ingredient has 1 allergen
+		stable = true
+		for _, allergens := range causes {
+			if len(allergens) != 1 {
+				stable = false
+			}
+		}
+
+		if stable {
+			break
+		}
+
+		// Find all allergens with with only 1 option. Remove that option from others
+		for i, a := range causes {
+			if len(a) == 1 {
+				l.claimAllergen(i, a[0])
+			}
+		}
+	}
+}
+
+func (l *list) getIngredientsWithAllergens() map[string][]string {
+	tmpIngredients := map[string][]string{}
+	// Remove duplicate allergens
+	for ingredient, allergens := range l.ingredientAllergens {
+		if len(allergens) < 1 {
+			continue
+		}
+
+		tmpIngredients[ingredient] = allergens
+	}
+	return tmpIngredients
+}
+
+func (l *list) claimAllergen(ingredient, allergen string) {
+	for i, alls := range l.ingredientAllergens {
+		if i == ingredient {
+			continue
+		}
+
+		filtered := []string{}
+		for _, a := range alls {
+			if a != allergen {
+				filtered = append(filtered, a)
+			}
+		}
+		l.ingredientAllergens[i] = filtered
 	}
 }
 
@@ -96,7 +159,7 @@ func (l *list) countAllergenFreeAppearances() (int, []string) {
 
 	// Find allergen free ingredients
 	ingredients := []string{}
-	for ingredient, allergens := range l.possibleIngredientAllergens {
+	for ingredient, allergens := range l.ingredientAllergens {
 		if len(allergens) == 0 {
 			ingredients = append(ingredients, ingredient)
 		}
@@ -116,6 +179,31 @@ func (l *list) countAllergenFreeAppearances() (int, []string) {
 	return count, ingredients
 }
 
+func (l *list) canonicalDangerList() string {
+	dangerous := []string{}
+
+	for _, allergens := range l.ingredientAllergens {
+		if len(allergens) == 1 {
+			dangerous = append(dangerous, allergens[0])
+		}
+	}
+
+	sort.Strings(dangerous)
+	ingredients := []string{}
+	for _, allergen := range dangerous {
+		for ingredient, allergens := range l.ingredientAllergens {
+			if len(allergens) == 1 {
+				if allergens[0] == allergen {
+					ingredients = append(ingredients, ingredient)
+					break
+				}
+			}
+		}
+	}
+
+	return strings.Join(ingredients, ",")
+}
+
 // PartOne How many times do allergen free ingredients appear
 func PartOne() string {
 	l := list{}
@@ -124,4 +212,14 @@ func PartOne() string {
 	l.isolateIngredientAllergens()
 	count, ingredients := l.countAllergenFreeAppearances()
 	return fmt.Sprintf("There are %d appearances of %d allergen free ingredients", count, len(ingredients))
+}
+
+// PartTwo What is the canonical dangerous list of ingredients
+func PartTwo() string {
+	l := list{}
+	l.load("twentyone/input.txt")
+
+	l.isolateIngredientAllergens()
+
+	return fmt.Sprintf("The canonical list of dangerous ingredients is %q", l.canonicalDangerList())
 }
