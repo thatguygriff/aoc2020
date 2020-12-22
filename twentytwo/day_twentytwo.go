@@ -91,6 +91,71 @@ func (c *combat) play() (round int) {
 	return round
 }
 
+func (c *combat) recursivePlay() (winner int) {
+	previousRounds := map[string]bool{}
+	for {
+		currentRound := ""
+		for _, c := range c.one.deck {
+			currentRound += fmt.Sprintf("%d,", c)
+		}
+		currentRound += "|"
+		for _, c := range c.two.deck {
+			currentRound += fmt.Sprintf("%d,", c)
+		}
+
+		if previousRounds[currentRound] {
+			return 1
+		} else {
+			previousRounds[currentRound] = true
+		}
+
+		// Draw cards as normal
+		played := []int{c.one.deck[0], c.two.deck[0]}
+		c.one.deck = c.one.deck[1:]
+		c.two.deck = c.two.deck[1:]
+
+		w := 0
+		if len(c.one.deck) >= played[0] && len(c.two.deck) >= played[1] {
+			rPOne := player{}
+			for i, c := range c.one.deck {
+				if i >= played[0] {
+					break
+				}
+				rPOne.deck = append(rPOne.deck, c)
+			}
+
+			rPTwo := player{}
+			for i, c := range c.two.deck {
+				if i >= played[1] {
+					break
+				}
+				rPTwo.deck = append(rPTwo.deck, c)
+			}
+			rC := combat{
+				one: rPOne,
+				two: rPTwo,
+			}
+			w = rC.recursivePlay()
+		} else if played[0] > played[1] {
+			w = 1
+		} else if played[1] > played[0] {
+			w = 2
+		}
+
+		if w == 1 {
+			c.one.deck = append(c.one.deck, played[0], played[1])
+		} else if w == 2 {
+			c.two.deck = append(c.two.deck, played[1], played[0])
+		}
+
+		if len(c.one.deck) == 0 {
+			return 2
+		} else if len(c.two.deck) == 0 {
+			return 1
+		}
+	}
+}
+
 // PartOne What is the winning player's score
 func PartOne() string {
 	c := combat{}
@@ -100,4 +165,15 @@ func PartOne() string {
 
 	rounds := c.play()
 	return fmt.Sprintf("The game lasted %d rounds with a score of %d - %d", rounds, c.one.score(), c.two.score())
+}
+
+// PartTwo What is the winning player's score after recursive combat
+func PartTwo() string {
+	c := combat{}
+	if err := c.load("twentytwo/input.txt"); err != nil {
+		return err.Error()
+	}
+
+	winner := c.recursivePlay()
+	return fmt.Sprintf("The winner was player %d with a score of %d - %d", winner, c.one.score(), c.two.score())
 }

@@ -28,3 +28,18 @@ func Test_combat_play(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func Test_recursive_play(t *testing.T) {
+	c := combat{}
+	if err := c.load("sample.txt"); err != nil {
+		t.Logf(err.Error())
+		t.FailNow()
+	}
+
+	c.recursivePlay()
+
+	if c.one.score() != 0 || c.two.score() != 291 {
+		t.Logf("Expected score of 0-291, got %d-%d", c.one.score(), c.two.score())
+		t.Fail()
+	}
+}
