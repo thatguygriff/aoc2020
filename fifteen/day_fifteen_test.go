@@ -56,5 +56,3 @@ func Test_get_guess3(t *testing.T) {
 		t.FailNow()
 	}
 }
-
-

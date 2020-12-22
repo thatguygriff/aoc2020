@@ -48,7 +48,7 @@ func Test_distribution_sample2(t *testing.T) {
 	}
 }
 
-func Test_arrangement_sample1(t * testing.T) {
+func Test_arrangement_sample1(t *testing.T) {
 	b := newBag("sample1.txt")
 
 	count := b.countArrangements()
@@ -59,7 +59,7 @@ func Test_arrangement_sample1(t * testing.T) {
 	}
 }
 
-func Test_arrangement_sample2(t * testing.T) {
+func Test_arrangement_sample2(t *testing.T) {
 	b := newBag("sample2.txt")
 
 	count := b.countArrangements()
